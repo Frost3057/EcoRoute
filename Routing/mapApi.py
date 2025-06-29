@@ -80,11 +80,14 @@ def build_distance_matrix(response):
     distance_matrix.append(row_list)
   return distance_matrix
 
+def get_dist_matrix():
+  data = create_data()
+  data['distance_matrix'] = create_distance_matrix(data)
+  return data
+
 def main():
   """Entry point of the program"""
   data = create_data()
-  addresses = data['addresses']
-  API_key = data['API_key']
   distance_matrix = create_distance_matrix(data)
   print(distance_matrix)
 if __name__ == '__main__':
