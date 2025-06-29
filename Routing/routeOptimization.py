@@ -14,7 +14,6 @@ def create_data_model():
 def print_solution(data, manager, routing, solution):
     print(f"Objective: {solution.ObjectiveValue()}")
     total_distance = 0
-    total_load = 0
     for vehicle_id in range(data["num_vehicles"]):
         if not routing.IsVehicleUsed(solution, vehicle_id):
             continue
@@ -25,7 +24,7 @@ def print_solution(data, manager, routing, solution):
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
             route_load -= data["demands"][node_index]
-            plan_output += f" {node_index} Load({route_load}) -> "
+            plan_output += f"Node: {node_index} Load({route_load}) -> "
             previous_index = index
             index = solution.Value(routing.NextVar(index))
             route_distance += routing.GetArcCostForVehicle(
@@ -36,11 +35,9 @@ def print_solution(data, manager, routing, solution):
         plan_output += f"Load of the route: {route_load}\n"
         print(plan_output)
         total_distance += route_distance
-        total_load += route_load
     print(f"Total distance of all routes: {total_distance}m")
-    print(f"Total load of all routes: {total_load}")
-
-def main():
+    
+def getRoutes():
     data = create_data_model()
     manager = pywrapcp.RoutingIndexManager(
         len(data["distance_matrix"]), data["num_vehicles"], data["depot"]
@@ -74,6 +71,7 @@ def main():
     solution = routing.SolveWithParameters(search_parameters)
     if solution:
         print_solution(data, manager, routing, solution)
-
+def main():
+    getRoutes()
 if __name__ == "__main__":
     main()
