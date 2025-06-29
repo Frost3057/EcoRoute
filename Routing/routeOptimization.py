@@ -9,34 +9,37 @@ def create_data_model():
     data["vehicle_capacities"] = [15, 15, 15, 15]
     data["num_vehicles"] = 4
     data["depot"] = 0
+    print(f"Number of addresses to ship: {len(data["addresses"])}")
     return data
 
-def print_solution(data, manager, routing, solution):
+def getRouteData(data, manager, routing, solution):
     print(f"Objective: {solution.ObjectiveValue()}")
-    total_distance = 0
+    routes = []
     for vehicle_id in range(data["num_vehicles"]):
         if not routing.IsVehicleUsed(solution, vehicle_id):
             continue
         index = routing.Start(vehicle_id)
-        plan_output = f"Route for vehicle {vehicle_id}:\n"
+        routeData = {}
+        routeData["vehicle_id"] = vehicle_id
         route_distance = 0
-        route_load = 15
+        load = []
+        route_index = []
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
-            route_load -= data["demands"][node_index]
-            plan_output += f"Node: {node_index} Load({route_load}) -> "
+            route_index.append(node_index)
+            load.append(data["demands"][node_index])
             previous_index = index
             index = solution.Value(routing.NextVar(index))
             route_distance += routing.GetArcCostForVehicle(
                 previous_index, index, vehicle_id
             )
-        plan_output += f" {manager.IndexToNode(index)} Load({route_load})\n"
-        plan_output += f"Distance of the route: {route_distance}m\n"
-        plan_output += f"Load of the route: {route_load}\n"
-        print(plan_output)
-        total_distance += route_distance
-    print(f"Total distance of all routes: {total_distance}m")
-    
+        load.append(manager.IndexToNode(index))
+        routeData["load"] = load
+        routeData["route_index"] = route_index
+        routeData["Distance_of_the_route"] = route_distance
+        routes.append(routeData)
+    return routes
+
 def getRoutes():
     data = create_data_model()
     manager = pywrapcp.RoutingIndexManager(
@@ -70,7 +73,7 @@ def getRoutes():
     search_parameters.time_limit.FromSeconds(1)
     solution = routing.SolveWithParameters(search_parameters)
     if solution:
-        print_solution(data, manager, routing, solution)
+        return getRouteData(data,manager,routing,solution)
 def main():
     getRoutes()
 if __name__ == "__main__":
