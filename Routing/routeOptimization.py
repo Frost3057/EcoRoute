@@ -21,10 +21,10 @@ def print_solution(data, manager, routing, solution):
         index = routing.Start(vehicle_id)
         plan_output = f"Route for vehicle {vehicle_id}:\n"
         route_distance = 0
-        route_load = 0
+        route_load = 15
         while not routing.IsEnd(index):
             node_index = manager.IndexToNode(index)
-            route_load += data["demands"][node_index]
+            route_load -= data["demands"][node_index]
             plan_output += f" {node_index} Load({route_load}) -> "
             previous_index = index
             index = solution.Value(routing.NextVar(index))
