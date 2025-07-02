@@ -1,14 +1,13 @@
 # import multichain
-# from multichain import MultiChainClient
-import Api.api
-from Api.api import install_Client
+import Api
+from Api.api import install_Client,load_env
+from Api.multichain import MultiChainClient
 def init():
     install_Client()
-    # rpchost='192.168.1.8' # change if multichaind is not running locally
-    # rpcport=7754 # usually default-rpc-port in blockchain parameters
-    # rpcuser='multichainrpc' # see multichain.conf in blockchain directory
-    # rpcpassword='CowAa1xM47GVrasYq71UU2KfhNV9fCuba28WkoiZmCa3' # see multichain.conf in blockchain directory
-    # mc=MultiChainClient(rpchost, rpcport, rpcuser, rpcpassword)
+    rpchost='192.168.1.8'
+    rpcport=7754
+    creds = load_env()
+    mc=MultiChainClient(rpchost, rpcport, creds[0], creds[1])
 
 def main():
     init()
