@@ -16,7 +16,6 @@ def install_Client():
     base_path = Path(__file__).resolve().parent
     client = "multichain.py"
     client_path = base_path / client
-    print(client_path)
     if(Path(client_path).exists()):
         print(".... .... Client requirement fulfilled .... ....")
     else:

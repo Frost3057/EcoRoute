@@ -9,7 +9,6 @@ import ssl
 default_error_code = 502
 
 class MultiChainClient:
-
     def __init__(self, host, port, username, password, usessl = False):
         self.host = host
         self.port = port
