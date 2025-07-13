@@ -13,8 +13,8 @@ def getResponse(inp):
     loader = MongodbLoader(
         connection_string= os.getenv("mongo_db_connection"),
         db_name="EcoRoute",
-        collection_name="Users",
-        field_names= ["name","email","age","gender","address","phone","createdAt"]
+        collection_name="Catalog",
+        field_names= ["name","description","category","label","ecoPlus","price"]
     )
     data = loader.load()
     db = Chroma.from_documents(data,OllamaEmbeddings(model='llama3.2'))
@@ -32,7 +32,7 @@ def getResponse(inp):
     retriever = db.as_retriever()
     retrieverChain = create_retrieval_chain(retriever=retriever,combine_docs_chain=doc_chain)
     response = retrieverChain.invoke({"input":inp})
-    print(response["answer"])
+    return response["answer"]
 
 def main():
     getResponse("What is Alicia Morgan's father name?")

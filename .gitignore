@@ -3,4 +3,5 @@ node_modules/
 BackEnd/__pycache__/
 BackEnd/BlockChain/__pycache__/
 BackEnd/Routing/__pycache__/
+BackEnd/llm/__pycache__/
 

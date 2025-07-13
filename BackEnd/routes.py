@@ -5,6 +5,7 @@ import os
 from serialization import list_deserial_item,list_deserial_order
 from BlockChain.blockChain import blockChain
 from BlockChain.init import init
+from llm.main import getResponse
 
 router = APIRouter()
 db = database()
@@ -45,6 +46,13 @@ async def place_order(order:dict):
     orderCollec = db.getordersCollec()
     result = await orderCollec.insert_one(order)
     return {"message":str(result.inserted_id)}
+@router.get("/EcoAgent")
+def getLLMResponse(input:dict):
+    inp = input["question"]
+    response = getResponse(inp)
+    return {
+        "response":response
+    }
 
 
 
