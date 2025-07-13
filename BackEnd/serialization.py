@@ -1,6 +1,6 @@
 def deserilize_user(user)->dict:
     return {
-        "id":user["_id"],
+        "id":str(user["_id"]),
         "User": user["name"],
         "email":user["email"],
         "phone":user["phone"],
@@ -12,7 +12,7 @@ def deserilize_user(user)->dict:
     }
 def deserilalize_order(order)->dict:
     return {
-        "id":order["_id"],
+        "id":str(order["_id"]),
         "cust_id":order["cust_id"],
         "status": order["status"],
         "createdAt":order["createdAt"],
@@ -24,7 +24,7 @@ def deserilalize_order(order)->dict:
     }
 def deserilalize_item(item)->dict:
     return{
-        "id":item["_id"],
+        "id":str(item["_id"]),
         "name":item["name"],
         "description":item["description"],
         "link":item["link"],
@@ -34,11 +34,11 @@ def deserilalize_item(item)->dict:
     }
 def deserialize_driver(driver) -> dict:
     return {
-        "name":driver["name"],
+        "name":str(driver["name"]),
         "phone":driver["phone"],
         "email":driver["email"],
         "license_number":driver["license_number"],
-        "vehicle_type":driver["driver_type"]
+        "vehicle_type":driver["vehicle_type"]
     }
 def list_deserial_user(users)->list:
     return [deserilize_user(user) for user in users]
@@ -47,4 +47,4 @@ def list_deserial_order(orders)->list:
 def list_deserial_item(items)->list:
     return [deserilalize_item(item) for item in items]
 def list_deserial_drivers(drivers)->list:
-    return [deserilize_user(driver) for driver in drivers]
+    return [deserialize_driver(driver) for driver in drivers]

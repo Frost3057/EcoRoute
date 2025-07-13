@@ -1,8 +1,14 @@
 from client import getClient
 
-client = getClient()
-db = client["EcoRoute"]
-usersCollec = client["Users"]
-driversCollec = client["Drivers"]
-ordersCollec = client["Orders"]
-catalogCollec = client["Catalog"]
+class database:
+    def __init__(self):
+        self.client = getClient()
+        self.db = self.client["EcoRoute"]
+    def getusersCollec(self):
+        return self.db["Users"]
+    def getdriversCollec(self):
+        return self.db["Drivers"]
+    def getordersCollec(self):
+        return self.db["Orders"]
+    def getcatalogCollec(self):
+        return self.db["Catalog"]

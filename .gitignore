@@ -1,2 +1,6 @@
 .env
 node_modules/
+BackEnd/__pycache__/
+BackEnd/BlockChain/__pycache__/
+BackEnd/Routing/__pycache__/
+
