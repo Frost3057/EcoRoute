@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Routes, Route, useNavigate } from 'react-router-dom';
 import {
   ShoppingCart,
@@ -249,6 +249,32 @@ function App() {
     setCartItems([]);
   };
 
+  const updateEcoCoinsBalance = (newBalance: number) => {
+    setEcoCoins(newBalance);
+  };
+
+  // Fetch initial EcoCoin balance from backend
+  useEffect(() => {
+    const fetchInitialBalance = async () => {
+      try {
+        const blockchainAddress = "1Aej3ZBacU1JGtTTzAz4NfqvoanHrrN6Gaq3Ce";
+        const response = await fetch(`http://localhost:8000/ecoCoin/getbalance/${blockchainAddress}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Extract qty from the response format: { "data": [{ "name": "EcoCoin", "assetref": "149-267-59242", "qty": 998999.9 }] }
+          const balance = data.data && data.data.length > 0 ? data.data[0].qty || 0 : 0;
+          setEcoCoins(balance);
+        }
+      } catch (error) {
+        console.error('Error fetching initial balance:', error);
+        // Keep the default balance if fetch fails
+      }
+    };
+
+    fetchInitialBalance();
+  }, []);
+
   const NavItem = ({ icon: Icon, label, to, count }: { icon: any, label: string, to: string, count?: number }) => (
     <NavLink
       to={to}
@@ -435,7 +461,7 @@ function App() {
             />
             <Route
               path="/ecocoins"
-              element={<EcoCoinsPage ecoCoins={ecoCoins} />}
+              element={<EcoCoinsPage ecoCoins={ecoCoins} onBalanceUpdate={updateEcoCoinsBalance} />}
             />
             <Route
               path="/orders"
