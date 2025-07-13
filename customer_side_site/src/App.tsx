@@ -245,6 +245,10 @@ function App() {
     return cartItems.reduce((total, item) => total + (item.ecoPrice * item.quantity), 0);
   };
 
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   const NavItem = ({ icon: Icon, label, to, count }: { icon: any, label: string, to: string, count?: number }) => (
     <NavLink
       to={to}
@@ -410,6 +414,7 @@ function App() {
                   deliveryRoutes={deliveryRoutes}
                   showRouteOptions={showRouteOptions}
                   setShowRouteOptions={setShowRouteOptions}
+                  clearCart={clearCart}
                 />
               }
             />

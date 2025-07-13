@@ -3,10 +3,6 @@ from database import database
 import sys
 import os
 from serialization import list_deserial_item,list_deserial_order
-
-# Add parent directory to Python path to import BlockChain module
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from BlockChain.blockChain import blockChain
 from BlockChain.init import init
 
@@ -49,6 +45,7 @@ async def place_order(order:dict):
     orderCollec = db.getordersCollec()
     result = await orderCollec.insert_one(order)
     return {"message":str(result.inserted_id)}
+
 
 
 
