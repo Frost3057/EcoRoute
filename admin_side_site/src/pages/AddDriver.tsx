@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Save, User, Phone, Mail, Truck, Package } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, Mail, Truck } from 'lucide-react';
 import { Driver, PageType } from '../App';
 
 interface AddDriverProps {
-  onAddDriver: (driver: Omit<Driver, 'id'>) => void;
+  onAddDriver: (driver: Omit<Driver, 'id'>) => Promise<{ success: boolean; message: string }>;
   onNavigate: (page: PageType) => void;
 }
 
@@ -12,40 +12,40 @@ const AddDriver: React.FC<AddDriverProps> = ({ onAddDriver, onNavigate }) => {
     name: '',
     phone: '',
     email: '',
+    license_number: '',
+    vehicle_type: '',
     vehicle: '',
     totalParcels: 0,
-    status: 'active' as Driver['status'],
-    route: [] as string[],
-    deliveriesPerStop: {} as { [stop: string]: number }
+    status: 'active' as Driver['status']
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const [routeInput, setRouteInput] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setMessage(null);
     
-    // Parse route and calculate deliveries per stop
-    const routeStops = routeInput.split(',').map(stop => stop.trim()).filter(stop => stop);
-    const parcelsPerStop = Math.ceil(formData.totalParcels / routeStops.length) || 0;
-    
-    const deliveriesPerStop: { [stop: string]: number } = {};
-    routeStops.forEach((stop, index) => {
-      if (index === routeStops.length - 1) {
-        // Last stop gets remaining parcels
-        deliveriesPerStop[stop] = formData.totalParcels - (parcelsPerStop * (routeStops.length - 1));
+    try {
+      const newDriver: Omit<Driver, 'id'> = {
+        ...formData
+      };
+
+      const result = await onAddDriver(newDriver);
+      
+      if (result.success) {
+        setMessage({ type: 'success', text: result.message });
+        setTimeout(() => {
+          onNavigate('drivers');
+        }, 1500);
       } else {
-        deliveriesPerStop[stop] = parcelsPerStop;
+        setMessage({ type: 'error', text: result.message });
       }
-    });
-
-    const newDriver: Omit<Driver, 'id'> = {
-      ...formData,
-      route: routeStops,
-      deliveriesPerStop
-    };
-
-    onAddDriver(newDriver);
-    onNavigate('drivers');
+    } catch (error) {
+      setMessage({ type: 'error', text: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -126,6 +126,22 @@ const AddDriver: React.FC<AddDriverProps> = ({ onAddDriver, onNavigate }) => {
                   placeholder="driver@example.com"
                 />
               </div>
+
+              <div>
+                <label htmlFor="license_number" className="block text-sm font-medium text-gray-700 mb-1">
+                  License Number *
+                </label>
+                <input
+                  type="text"
+                  id="license_number"
+                  name="license_number"
+                  required
+                  value={formData.license_number}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="DL123456789"
+                />
+              </div>
             </div>
 
             {/* Vehicle & Delivery Information */}
@@ -134,6 +150,22 @@ const AddDriver: React.FC<AddDriverProps> = ({ onAddDriver, onNavigate }) => {
                 <Truck className="h-5 w-5 mr-2" />
                 Vehicle & Delivery Information
               </h3>
+
+              <div>
+                <label htmlFor="vehicle_type" className="block text-sm font-medium text-gray-700 mb-1">
+                  Vehicle Type *
+                </label>
+                <input
+                  type="text"
+                  id="vehicle_type"
+                  name="vehicle_type"
+                  required
+                  value={formData.vehicle_type}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Van, Truck, Motorcycle"
+                />
+              </div>
 
               <div>
                 <label htmlFor="vehicle" className="block text-sm font-medium text-gray-700 mb-1">
@@ -187,47 +219,50 @@ const AddDriver: React.FC<AddDriverProps> = ({ onAddDriver, onNavigate }) => {
             </div>
           </div>
 
-          {/* Route Information */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center mb-4">
-              <Package className="h-5 w-5 mr-2" />
-              Route Information
-            </h3>
-            
-            <div>
-              <label htmlFor="route" className="block text-sm font-medium text-gray-700 mb-1">
-                Delivery Route *
-              </label>
-              <input
-                type="text"
-                id="route"
-                value={routeInput}
-                onChange={(e) => setRouteInput(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter stops separated by commas (e.g., Downtown, Midtown, Uptown)"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter delivery stops separated by commas. Parcels will be distributed evenly across stops.
-              </p>
+
+
+          {/* Message Display */}
+          {message && (
+            <div className={`p-4 rounded-lg ${
+              message.type === 'success' 
+                ? 'bg-green-50 border border-green-200 text-green-800' 
+                : 'bg-red-50 border border-red-200 text-red-800'
+            }`}>
+              <div className="flex items-center">
+                <span className="text-lg mr-2">
+                  {message.type === 'success' ? '✅' : '❌'}
+                </span>
+                {message.text}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={() => onNavigate('drivers')}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              disabled={isSubmitting}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center transition-colors duration-200"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="h-4 w-4 mr-2" />
-              Add Driver
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Adding Driver...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Add Driver
+                </>
+              )}
             </button>
           </div>
         </form>

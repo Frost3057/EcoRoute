@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from database import database
-from serialization import list_deserial_item,list_deserial_order
+from serialization import list_deserial_item,list_deserial_order,list_deserial_drivers
 from BlockChain.blockChain import blockChain
 from BlockChain.init import init
 from llm.main import getResponse
@@ -8,12 +8,14 @@ from llm.main import getResponse
 router = APIRouter()
 db = database()
 blockChain = init()
+
 @router.get("/ecoCoin/getbalance/{address}")
 def get_balance(address):
     balance = blockChain.getbalance(add=address)
     return {
         "data":balance
     }
+
 @router.get("/catalog")
 async def get_catalog():
     catalog = db.getcatalogCollec()
@@ -29,6 +31,7 @@ async def get_orderhist():
     d_order = list_deserial_order(items)
     return d_order
 @router.get("/orders/{customer_id}")
+
 async def get_orderhist(customer_id):
     orderCollec = db.getordersCollec()
     item_tensor = orderCollec.find()
@@ -39,11 +42,13 @@ async def get_orderhist(customer_id):
         if order["cust_id"] == customer_id:
             orders.append(order)
     return orders
+
 @router.post("/order/place_order")
 async def place_order(order:dict):
     orderCollec = db.getordersCollec()
     result = await orderCollec.insert_one(order)
     return {"message":str(result.inserted_id)}
+
 @router.post("/EcoAgent")
 def getLLMResponse(input:dict):
     inp = input["question"]
@@ -51,6 +56,20 @@ def getLLMResponse(input:dict):
     return {
         "response":response
     }
+
+@router.post("/drivers/add_driver")
+async def add_driver(driver:dict):
+    driverCollec = db.getdriversCollec()
+    result = await driverCollec.insert_one(driver)
+    return {"message":str(result.inserted_id)}
+
+@router.get("/drivers")
+async def get_drivers():
+    coll = db.getdriversCollec()
+    item_tensor = coll.find()
+    items = await item_tensor.to_list()
+    d_driver = list_deserial_drivers(items)
+    return d_driver
 
 
 

@@ -13,9 +13,12 @@ import { PageType } from '../App';
 interface SidebarProps {
   currentPage: PageType;
   onPageChange: (page: PageType) => void;
+  productCount: number;
+  orderCount: number;
+  driverCount: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange, productCount, orderCount, driverCount }) => {
   const menuItems = [
     { id: 'dashboard' as PageType, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'users' as PageType, label: 'Users', icon: Users },
@@ -45,8 +48,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
             >
               <Icon className={`mr-3 h-4 w-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
               {item.label}
-              {item.id !== 'dashboard' && item.id !== 'drivers' && item.id !== 'ecocoins' && item.id !== 'settings' && (
-                <span className="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">3</span>
+              {item.id === 'products' && (
+                <span className="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{productCount}</span>
+              )}
+              {item.id === 'orders' && (
+                <span className="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{orderCount}</span>
+              )}
+              {item.id === 'drivers' && (
+                <span className="ml-auto bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{driverCount}</span>
               )}
             </button>
           );

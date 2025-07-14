@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -14,62 +14,107 @@ import DriverDetail from './pages/DriverDetail';
 export type PageType = 'dashboard' | 'users' | 'products' | 'orders' | 'ecocoins' | 'settings' | 'drivers' | 'add-driver' | 'driver-detail';
 
 export interface Driver {
-  id: string;
+  id?: string;
   name: string;
   phone: string;
   email: string;
-  vehicle: string;
-  totalParcels: number;
-  status: 'active' | 'inactive' | 'on-route';
-  route: string[];
-  deliveriesPerStop: { [stop: string]: number };
+  license_number?: string;
+  vehicle_type?: string;
+  vehicle?: string;
+  totalParcels?: number;
+  status?: 'active' | 'inactive' | 'on-route';
+  route?: string[];
+  deliveriesPerStop?: { [stop: string]: number };
 }
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
-  const [drivers, setDrivers] = useState<Driver[]>([
-    {
-      id: '1',
-      name: 'John Smith',
-      phone: '+1 (555) 123-4567',
-      email: 'john.smith@delivery.com',
-      vehicle: 'Van - ABC123',
-      totalParcels: 25,
-      status: 'on-route',
-      route: ['Downtown', 'Midtown', 'Uptown', 'Suburbs'],
-      deliveriesPerStop: { 'Downtown': 8, 'Midtown': 6, 'Uptown': 7, 'Suburbs': 4 }
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      phone: '+1 (555) 987-6543',
-      email: 'sarah.johnson@delivery.com',
-      vehicle: 'Truck - XYZ789',
-      totalParcels: 32,
-      status: 'active',
-      route: ['East Side', 'West Side', 'North End', 'South End'],
-      deliveriesPerStop: { 'East Side': 10, 'West Side': 8, 'North End': 9, 'South End': 5 }
-    },
-    {
-      id: '3',
-      name: 'Mike Chen',
-      phone: '+1 (555) 456-7890',
-      email: 'mike.chen@delivery.com',
-      vehicle: 'Van - DEF456',
-      totalParcels: 18,
-      status: 'active',
-      route: ['Business District', 'Residential Area', 'Mall District'],
-      deliveriesPerStop: { 'Business District': 7, 'Residential Area': 6, 'Mall District': 5 }
-    }
-  ]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const addDriver = (newDriver: Omit<Driver, 'id'>) => {
-    const driver: Driver = {
-      ...newDriver,
-      id: Date.now().toString()
-    };
-    setDrivers(prev => [...prev, driver]);
+  useEffect(() => {
+    fetchDrivers();
+    fetchProducts();
+    fetchOrders();
+  }, []);
+
+  const fetchDrivers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('http://localhost:8000/drivers');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDrivers(data);
+      } else {
+        throw new Error('Failed to fetch drivers');
+      }
+    } catch (err) {
+      setError('Failed to load drivers. Please try again.');
+      console.error('Error fetching drivers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/catalog');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+      } else {
+        console.error('Failed to fetch products');
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/orders');
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      } else {
+        console.error('Failed to fetch orders');
+      }
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+    }
+  };
+
+  const addDriver = async (newDriver: Omit<Driver, 'id'>) => {
+    try {
+      const response = await fetch('http://localhost:8000/drivers/add_driver', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDriver)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Refresh the drivers list after adding
+        await fetchDrivers();
+        return { success: true, message: 'Driver added successfully!' };
+      } else {
+        throw new Error('Failed to add driver');
+      }
+    } catch (error) {
+      console.error('Error adding driver:', error);
+      return { success: false, message: 'Failed to add driver. Please try again.' };
+    }
   };
 
   const handleDriverClick = (driverId: string) => {
@@ -92,7 +137,14 @@ function App() {
       case 'settings':
         return <Settings />;
       case 'drivers':
-        return <Drivers drivers={drivers} onDriverClick={handleDriverClick} />;
+        return <Drivers 
+          drivers={drivers} 
+          onDriverClick={handleDriverClick} 
+          loading={loading}
+          error={error}
+          onRefresh={fetchDrivers}
+          onNavigate={setCurrentPage}
+        />;
       case 'add-driver':
         return <AddDriver onAddDriver={addDriver} onNavigate={setCurrentPage} />;
       case 'driver-detail':
@@ -110,7 +162,13 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-100">
       <Header />
-      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+              <Sidebar 
+          currentPage={currentPage} 
+          onPageChange={setCurrentPage} 
+          productCount={products.length}
+          orderCount={orders.length}
+          driverCount={drivers.length}
+        />
       <main className="flex-1 overflow-auto ml-64 mt-16">
         {renderPage()}
       </main>
