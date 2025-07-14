@@ -1,109 +1,118 @@
 import React, { useState } from 'react';
-import { Truck, Plus, Home } from 'lucide-react';
-import { DriverForm } from './components/DriverForm';
-import { Dashboard } from './components/Dashboard';
-import { DriverDetails } from './components/DriverDetails';
-import { allMockDrivers } from './data/mockData';
-import { Driver } from './types/driver';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import Dashboard from './pages/Dashboard';
+import Users from './pages/Users';
+import Products from './pages/Products';
+import Orders from './pages/Orders';
+import EcoCoins from './pages/EcoCoins';
+import Settings from './pages/Settings';
+import Drivers from './pages/Drivers';
+import AddDriver from './pages/AddDriver';
+import DriverDetail from './pages/DriverDetail';
+
+export type PageType = 'dashboard' | 'users' | 'products' | 'orders' | 'ecocoins' | 'settings' | 'drivers' | 'add-driver' | 'driver-detail';
+
+export interface Driver {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  vehicle: string;
+  totalParcels: number;
+  status: 'active' | 'inactive' | 'on-route';
+  route: string[];
+  deliveriesPerStop: { [stop: string]: number };
+}
 
 function App() {
-  const [currentView, setCurrentView] = useState<'form' | 'dashboard' | 'details'>('form');
-  const [drivers, setDrivers] = useState<Driver[]>(allMockDrivers);
+  const [currentPage, setCurrentPage] = useState<PageType>('dashboard');
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([
+    {
+      id: '1',
+      name: 'John Smith',
+      phone: '+1 (555) 123-4567',
+      email: 'john.smith@delivery.com',
+      vehicle: 'Van - ABC123',
+      totalParcels: 25,
+      status: 'on-route',
+      route: ['Downtown', 'Midtown', 'Uptown', 'Suburbs'],
+      deliveriesPerStop: { 'Downtown': 8, 'Midtown': 6, 'Uptown': 7, 'Suburbs': 4 }
+    },
+    {
+      id: '2',
+      name: 'Sarah Johnson',
+      phone: '+1 (555) 987-6543',
+      email: 'sarah.johnson@delivery.com',
+      vehicle: 'Truck - XYZ789',
+      totalParcels: 32,
+      status: 'active',
+      route: ['East Side', 'West Side', 'North End', 'South End'],
+      deliveriesPerStop: { 'East Side': 10, 'West Side': 8, 'North End': 9, 'South End': 5 }
+    },
+    {
+      id: '3',
+      name: 'Mike Chen',
+      phone: '+1 (555) 456-7890',
+      email: 'mike.chen@delivery.com',
+      vehicle: 'Van - DEF456',
+      totalParcels: 18,
+      status: 'active',
+      route: ['Business District', 'Residential Area', 'Mall District'],
+      deliveriesPerStop: { 'Business District': 7, 'Residential Area': 6, 'Mall District': 5 }
+    }
+  ]);
 
-  const handleDriverSubmit = (formData: any) => {
-    const newDriver: Driver = {
-      id: `driver${drivers.length + 1}`,
-      ...formData,
-      currentRoute: `Route ${String.fromCharCode(65 + drivers.length)} - New Assignment`,
-      status: 'active' as const,
-      deliveryStops: [
-        {
-          id: `stop${Date.now()}`,
-          address: '123 Sample St, New Area',
-          parcelsCount: formData.totalParcels,
-          estimatedTime: '10:00 AM',
-          status: 'pending' as const,
-          coordinates: { lat: 40.7128, lng: -74.0060 }
-        }
-      ]
+  const addDriver = (newDriver: Omit<Driver, 'id'>) => {
+    const driver: Driver = {
+      ...newDriver,
+      id: Date.now().toString()
     };
-    
-    setDrivers(prev => [...prev, newDriver]);
-    setCurrentView('dashboard');
+    setDrivers(prev => [...prev, driver]);
   };
 
   const handleDriverClick = (driverId: string) => {
     setSelectedDriverId(driverId);
-    setCurrentView('details');
+    setCurrentPage('driver-detail');
   };
 
-  const handleBackToDashboard = () => {
-    setSelectedDriverId(null);
-    setCurrentView('dashboard');
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'users':
+        return <Users />;
+      case 'products':
+        return <Products />;
+      case 'orders':
+        return <Orders />;
+      case 'ecocoins':
+        return <EcoCoins />;
+      case 'settings':
+        return <Settings />;
+      case 'drivers':
+        return <Drivers drivers={drivers} onDriverClick={handleDriverClick} />;
+      case 'add-driver':
+        return <AddDriver onAddDriver={addDriver} onNavigate={setCurrentPage} />;
+      case 'driver-detail':
+        const selectedDriver = drivers.find(d => d.id === selectedDriverId);
+        return selectedDriver ? (
+          <DriverDetail driver={selectedDriver} onBack={() => setCurrentPage('drivers')} />
+        ) : (
+          <div>Driver not found</div>
+        );
+      default:
+        return <Dashboard />;
+    }
   };
-
-  const selectedDriver = selectedDriverId 
-    ? drivers.find(d => d.id === selectedDriverId) 
-    : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <Truck className="w-8 h-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-800">EcoRoute Admin</h1>
-            </div>
-            <nav className="flex items-center space-x-4">
-              <button
-                onClick={() => setCurrentView('form')}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  currentView === 'form' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Driver</span>
-              </button>
-              <button
-                onClick={() => setCurrentView('dashboard')}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  currentView === 'dashboard' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:text-gray-800'
-                }`}
-              >
-                <Home className="w-4 h-4" />
-                <span>Dashboard</span>
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentView === 'form' && (
-          <DriverForm onSubmit={handleDriverSubmit} />
-        )}
-        
-        {currentView === 'dashboard' && (
-          <Dashboard 
-            drivers={drivers} 
-            onDriverClick={handleDriverClick} 
-          />
-        )}
-        
-        {currentView === 'details' && selectedDriver && (
-          <DriverDetails 
-            driver={selectedDriver} 
-            onBack={handleBackToDashboard} 
-          />
-        )}
+    <div className="flex h-screen bg-gray-100">
+      <Header />
+      <Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      <main className="flex-1 overflow-auto ml-64 mt-16">
+        {renderPage()}
       </main>
     </div>
   );
