@@ -5,3 +5,6 @@ BackEnd/BlockChain/__pycache__/
 BackEnd/Routing/__pycache__/
 BackEnd/llm/__pycache__/
 
+# iOS configuration
+partner_app/ios/Runner/Config.xcconfig
+
