@@ -6,6 +6,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
 def getResponse(inp):
     load_dotenv()
@@ -17,7 +18,9 @@ def getResponse(inp):
         field_names= ["name","description","category","label","ecoPlus","price"]
     )
     data = loader.load()
-    db = Chroma.from_documents(data,OllamaEmbeddings(model='llama3.2'))
+    textSplitter= RecursiveCharacterTextSplitter()
+    final_data = textSplitter.split_documents(data)
+    db = Chroma.from_documents(final_data,OllamaEmbeddings(model='llama3.2'))
     promptTemp = ChatPromptTemplate.from_template(
         """"
         Answer the following question based only on the provided context.

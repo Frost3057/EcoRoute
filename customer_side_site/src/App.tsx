@@ -52,19 +52,46 @@ function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     { sender: 'bot', text: 'Hi! I am EcoAgent. How can I help you today?' }
-  ]);
+  ] as Array<{ sender: string; text: string; isLoading?: boolean }>);
   const [chatInput, setChatInput] = useState('');
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
-    setChatHistory([...chatHistory, { sender: 'user', text: chatInput }]);
+    
+    const userMessage = chatInput.trim();
+    setChatHistory(prev => [...prev, { sender: 'user', text: userMessage }]);
     setChatInput('');
-    setTimeout(() => {
-      setChatHistory((prev) => [
-        ...prev,
-        { sender: 'bot', text: 'This is a placeholder response from EcoAgent.' }
-      ]);
-    }, 600);
+    
+    // Show typing indicator
+    setChatHistory(prev => [...prev, { sender: 'bot', text: '...', isLoading: true }]);
+    
+    try {
+      const response = await fetch('http://localhost:8000/EcoAgent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: userMessage })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Remove loading indicator and add bot response
+        setChatHistory(prev => {
+          const withoutLoading = prev.filter(msg => !msg.isLoading);
+          return [...withoutLoading, { sender: 'bot', text: data.response || 'Sorry, I couldn\'t process your request.' }];
+        });
+      } else {
+        throw new Error('Failed to get response from EcoAgent');
+      }
+    } catch (error) {
+      console.error('Error getting LLM response:', error);
+      // Remove loading indicator and add error message
+      setChatHistory(prev => {
+        const withoutLoading = prev.filter(msg => !msg.isLoading);
+        return [...withoutLoading, { sender: 'bot', text: 'Sorry, I\'m having trouble connecting right now. Please try again later.' }];
+      });
+    }
   };
 
   const categories = [
@@ -508,7 +535,15 @@ function App() {
                       : 'bg-gray-100 text-gray-900 rounded-bl-none'
                   }`}
                 >
-                  {msg.text}
+                  {msg.isLoading ? (
+                    <div className="flex items-center space-x-1">
+                      <div className="animate-bounce">●</div>
+                      <div className="animate-bounce" style={{ animationDelay: '0.1s' }}>●</div>
+                      <div className="animate-bounce" style={{ animationDelay: '0.2s' }}>●</div>
+                    </div>
+                  ) : (
+                    msg.text
+                  )}
                 </div>
               </div>
             ))}

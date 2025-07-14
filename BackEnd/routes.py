@@ -1,7 +1,5 @@
 from fastapi import APIRouter
 from database import database
-import sys
-import os
 from serialization import list_deserial_item,list_deserial_order
 from BlockChain.blockChain import blockChain
 from BlockChain.init import init
@@ -46,7 +44,7 @@ async def place_order(order:dict):
     orderCollec = db.getordersCollec()
     result = await orderCollec.insert_one(order)
     return {"message":str(result.inserted_id)}
-@router.get("/EcoAgent")
+@router.post("/EcoAgent")
 def getLLMResponse(input:dict):
     inp = input["question"]
     response = getResponse(inp)
