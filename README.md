@@ -197,12 +197,14 @@ flutter run
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👥 Team
+- AI Engineer: Aman Bajpai
+- BlockChain Developer: Aman Bajpai
+- UI/UX Design: Shreyash Khare
+- Mobile App Development: Aman Bajpai
+- Backend Development: Pradhi Raj
+- Frontend Development: Shivansh Srivastava
 
-- Backend Development: [Your Name]
-- Frontend Development: [Your Name]
-- Mobile App Development: [Your Name]
-- UI/UX Design: [Your Name]
 
 ## 📞 Support
 
-For support, email [your-email] or join our Slack channel.
+For support, email amanbajpai5660@gmail.com or join our Slack channel.
