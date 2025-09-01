@@ -202,7 +202,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - UI/UX Design: Shreyash Khare
 - Mobile App Development: Aman Bajpai
 - Backend Development: Pradhi Raj
-- Frontend Development: Shivansh Srivastava
+- Frontend Development: Shivansh Srivastava, Shreyash Khare
 
 
 ## 📞 Support
